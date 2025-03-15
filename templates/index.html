@@ -195,13 +195,14 @@
     }
 
     function stopScanning() {
-        setResultText_empty();
         if (scanner) {
             scanner.stop().then(() => {
                 scanner = null;
                 document.getElementById('reader').style.display = 'none';
                 toggleButtons(true, false);
                 console.log("Сканирование остановлено");
+                setResultText_empty();
+
             }).catch(err => {
                 console.log("Ошибка при остановке сканера", err);
             });
