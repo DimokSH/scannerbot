@@ -154,15 +154,20 @@
         }
     }
 
-    function onScanSuccess(decodedText, decodedResult) {
+
+
+    function setResultText_empty() {      document.getElementById('result').innerHTML = '';   }
+    function setResultText_ok() {
         document.getElementById('result').innerHTML = `
                 <h3>Результат:</h3>
                 <p>Успешно отсканировано. Смотрите результат в программе.</p>
             `;
-                // <p>${decodedText}</p>
+    }
 
-// Отправка данных на сервер
 
+    function onScanSuccess(decodedText, decodedResult) {
+        setResultText_ok();
+        // Отправка данных на сервер
         fetch('' + serverIp + `/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`)
             .then(response => {
                 if (!response.ok) {
@@ -184,16 +189,17 @@
 
     function onScanError(errorMessage) {
         console.warn(`Ошибка сканирования: ${errorMessage}`);
+        setResultText_empty();
     }
 
     function stopScanning() {
+        setResultText_empty();
         if (scanner) {
             scanner.stop().then(() => {
                 scanner = null;
                 document.getElementById('reader').style.display = 'none';
                 toggleButtons(true, false);
                 console.log("Сканирование остановлено");
-                document.getElementById('result').innerHTML = '';
             }).catch(err => {
                 console.log("Ошибка при остановке сканера", err);
             });
