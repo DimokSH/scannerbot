@@ -149,7 +149,7 @@
                 onScanError
             ).catch(err => {
                 console.error("Не удалось запустить сканер", err);
-                // stopScanning();
+                stopScanning();
             });
         }
     }
@@ -157,7 +157,6 @@
 
 
     function setResultText_empty() {
-        alert(123123123)
         document.getElementById('result').innerHTML = '';   }
     function setResultText_ok() {
         document.getElementById('result').innerHTML = `
@@ -168,7 +167,6 @@
 
 
     function onScanSuccess(decodedText, decodedResult) {
-        setResultText_ok();
         // Отправка данных на сервер
         fetch('' + serverIp + `/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`)
             .then(response => {
@@ -184,7 +182,7 @@
                 handleExit();
             });
         stopScanning();
-        // Воспроизведение звука
+        setResultText_ok();
         const audio = document.getElementById('successSound');
         audio.play();
     }
