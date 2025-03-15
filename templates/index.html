@@ -261,8 +261,9 @@
         fetch('' + serverIp + `/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`)
             .then(response => {
                 if (!response.ok) {
-                    alert("Ошибка при отправке данных")
+                    alert("Введенный пароль больше не действителен. Получите новый пароль в программе.")
                     console.error('Ошибка при отправке данных');
+                    handleExit();
                 }
             })
             .catch(error => {
