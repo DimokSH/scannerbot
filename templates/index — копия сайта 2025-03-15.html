@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #reader {
+            width: 100%;
+            margin: 20px auto;
+            position: relative;
+            display: none;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #2196F3;
+        }
+
+        #startBtn {
+            background-color: #2196F3;
+        }
+
+        #stopBtn {
+            background-color: #f44336;
+            display: none;
+        }
+
+        #passwordInput {
+            margin: 10px;
+            padding: 8px;
+            width: 200px;
+        }
+
+        .password-section {
+            margin-top: 50px;
+            position: relative;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #exitBtn {
+            background-color: #666;
+        }
+
+
+        #mainContent {
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .button-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #startBtn {
+            padding: 25px 50px;
+            font-size: 1.5em;
+            transform: scale(1.5);
+            margin: 15px;
+        }
+
+        #exitBtn {
+            margin-top: 40px;
+            transform: scale(1.2);
+        }
+
+        /* Добавляем новые стили для сообщения об ошибке */
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 8px 15px;
+            margin-top: 10px;
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="password-section">
+    <button id="passwordBtn">Ввести пароль</button>
+    <input type="number" id="passwordInput" class="hidden" placeholder="Введите пароль">
+    <div id="passwordError" class="error-message"></div> <!-- Добавлен блок для ошибки -->
+</div>
+
+<div id="mainContent" class="hidden">
+    <h1>QR Code Scanner</h1>
+    <div id="reader"></div>
+    <div class="button-container">
+        <button id="startBtn" onclick="startScanning()">Начать сканирование</button>
+        <button id="exitBtn" onclick="handleExit()">Выход</button>
+    </div>
+    <button id="stopBtn" onclick="stopScanning()">Остановить сканирование</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    let scanner = null;
+    let savedKey = ''; // Переменная для хранения пароля
+    const config = {
+        fps: 15,
+        qrbox: 250
+    };
+
+    // Обработчики для системы пароля
+    document.getElementById('passwordBtn').addEventListener('click', () => {
+        document.getElementById('passwordBtn').classList.add('hidden');
+        document.getElementById('passwordInput').classList.remove('hidden');
+        document.getElementById('passwordInput').focus();
+    });
+
+    // Модифицированная часть обработчика пароля
+    document.getElementById('passwordInput').addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            const passwordInput = document.getElementById('passwordInput');
+            const password = passwordInput.value;
+            const errorElement = document.getElementById('passwordError');
+
+            fetch(`https://scannerbot.ru/checkKey/?key=${encodeURIComponent(password)}`)
+                .then(response => {
+                    if (response.status === 200) {
+                        savedKey = password;
+                        document.querySelector('.password-section').classList.add('hidden');
+                        document.getElementById('mainContent').classList.remove('hidden');
+                        passwordInput.value = '';
+                        errorElement.classList.remove('show');
+                    } else {
+                        throw new Error('Неверный пароль!');
+                    }
+                })
+                .catch(error => {
+                    errorElement.textContent = error.message || 'Ошибка соединения';
+                    errorElement.classList.add('show');
+                    passwordInput.value = '';
+                    document.getElementById('passwordBtn').classList.remove('hidden');
+                    passwordInput.classList.add('hidden');
+                });
+        }
+    });
+
+    // Добавляем обработчик для скрытия ошибки при новом вводе
+    document.getElementById('passwordInput').addEventListener('input', () => {
+        document.getElementById('passwordError').classList.remove('show');
+    });
+
+    // document.getElementById('passwordInput').addEventListener('keyup', (e) => {
+    //     if (e.key === 'Enter') {
+    //         if (document.getElementById('passwordInput').value === '7') {
+    //             document.querySelector('.password-section').classList.add('hidden');
+    //             document.getElementById('mainContent').classList.remove('hidden');
+    //         } else {
+    //             alert('Неверный пароль!');
+    //             document.getElementById('passwordInput').value = '';
+    //             document.getElementById('passwordBtn').classList.remove('hidden');
+    //             document.getElementById('passwordInput').classList.add('hidden');
+    //         }
+    //     }
+    // });
+
+    // Оригинальные функции сканера
+    function toggleButtons(startVisible, stopVisible) {
+        document.getElementById('startBtn').style.display = startVisible ? 'inline-block' : 'none';
+        document.getElementById('exitBtn').style.display = startVisible ? 'inline-block' : 'none';
+        document.getElementById('stopBtn').style.display = stopVisible ? 'inline-block' : 'none';
+    }
+
+    function handleExit() {
+        // Останавливаем сканер если активен
+        stopScanning();
+        // Скрываем основной интерфейс
+        document.getElementById('mainContent').classList.add('hidden');
+        // Показываем экран ввода пароля
+        document.querySelector('.password-section').classList.remove('hidden');
+        // Сбрасываем состояние пароля
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordBtn').classList.remove('hidden');
+        document.getElementById('passwordInput').classList.add('hidden');
+    }
+
+    function startScanning() {
+        if (!scanner) {
+            scanner = new Html5Qrcode("reader");
+            toggleButtons(false, true);
+            document.getElementById('reader').style.display = 'block';
+
+            scanner.start(
+                {facingMode: "environment"},
+                config,
+                onScanSuccess,
+                onScanError
+            ).catch(err => {
+                console.error("Не удалось запустить сканер", err);
+                stopScanning();
+            });
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('result').innerHTML = `
+                <h3>Результат:</h3>
+                <p>${decodedText}</p>
+            `;
+
+// Отправка данных на сервер
+        const url = `https://scannerbot.ru/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`;
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Ошибка при отправке данных');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        stopScanning();
+    }
+
+    function onScanError(errorMessage) {
+        console.warn(`Ошибка сканирования: ${errorMessage}`);
+    }
+
+    function stopScanning() {
+        if (scanner) {
+            scanner.stop().then(() => {
+                scanner = null;
+                document.getElementById('reader').style.display = 'none';
+                toggleButtons(true, false);
+                console.log("Сканирование остановлено");
+            }).catch(err => {
+                console.log("Ошибка при остановке сканера", err);
+            });
+        }
+    }
+
+</script>
+
+</body>
+</html>
