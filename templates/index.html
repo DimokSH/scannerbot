@@ -126,14 +126,17 @@
         // Останавливаем сканер если активен
         stopScanning();
 
-        // Скрываем основной интерфейс
-        document.getElementById('mainContent').classList.add('hidden');
-        // Показываем экран ввода пароля
-        document.querySelector('.password-section').classList.remove('hidden');
-        // Сбрасываем состояние пароля
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordBtn').classList.remove('hidden');
-        document.getElementById('passwordInput').classList.add('hidden');
+        // // Скрываем основной интерфейс
+        // document.getElementById('mainContent').classList.add('hidden');
+        // // Показываем экран ввода пароля
+        // document.querySelector('.password-section').classList.remove('hidden');
+        // // Сбрасываем состояние пароля
+        // document.getElementById('passwordInput').value = '';
+        // document.getElementById('passwordBtn').classList.remove('hidden');
+        // document.getElementById('passwordInput').classList.add('hidden');
+
+        // Полный рефреш страницы
+        location.reload(true);
     }
 
     function startScanning() {
@@ -165,7 +168,6 @@
                 <h3>Результат:</h3>
                 <p>Успешно отсканировано. Смотрите результат в программе.</p>
             `;
-        // console.warn('setResultText_ok'+document.getElementById('result').innerHTML);
     }
 
 
@@ -194,67 +196,22 @@
         // console.warn(`Ошибка сканирования: ${errorMessage}`);
     }
 
-    // function stopScanning() {
-    //     if (scanner) {
-    //         scanner.stop().then(() => {
-    //             scanner = null;
-    //             document.getElementById('reader').style.display = 'none';
-    //             toggleButtons(true, false);
-    //             console.log("Сканирование остановлено");
-    //             setResultText_empty();
-    //
-    //         }).catch(err => {
-    //             console.log("Ошибка при остановке сканера", err);
-    //         });
-    //     }
-    // }
-
-    // Добавляем функцию для остановки сканера без очистки результата
-    function stopScannerOnly() {
+    function stopScanning() {
         if (scanner) {
-            return scanner.stop().then(() => {
+            scanner.stop().then(() => {
                 scanner = null;
                 document.getElementById('reader').style.display = 'none';
                 toggleButtons(true, false);
                 console.log("Сканирование остановлено");
+                setResultText_empty();
+
+            }).catch(err => {
+                console.log("Ошибка при остановке сканера", err);
             });
         }
-        return Promise.resolve();
     }
 
-    // Модифицируем функцию onScanSuccess
-    async function onScanSuccess(decodedText, decodedResult) {
-        // Останавливаем сканер БЕЗ очистки результата
-        await stopScannerOnly();
 
-        // Устанавливаем результат
-        setResultText_ok();
-
-        // Воспроизводим звук
-        const audio = document.getElementById('successSound');
-        audio.play();
-
-        // Отправка данных на сервер
-        fetch(`${serverIp}/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`)
-            .then(response => {
-                if (!response.ok) {
-                    alert("Пароль недействителен!");
-                    handleExit();
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                handleExit();
-            });
-    }
-
-    // Оригинальная функция stopScanning (для кнопки "Остановить")
-    function stopScanning() {
-        stopScannerOnly().then(() => {
-            // Очищаем результат только при явном нажатии на кнопку
-            setResultText_empty();
-        });
-    }
 
 </script>
 </body>
