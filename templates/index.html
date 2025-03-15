@@ -157,12 +157,14 @@
 
 
     function setResultText_empty() {
+        console.warn('setResultText_empty' + document.getElementById('result').innerHTML);
         document.getElementById('result').innerHTML = '';   }
     function setResultText_ok() {
         document.getElementById('result').innerHTML = `
                 <h3>Результат:</h3>
                 <p>Успешно отсканировано. Смотрите результат в программе.</p>
             `;
+        console.warn('setResultText_ok'+document.getElementById('result').innerHTML);
     }
 
 
@@ -188,7 +190,7 @@
     }
 
     function onScanError(errorMessage) {
-        console.warn(`Ошибка сканирования: ${errorMessage}`);
+        // console.warn(`Ошибка сканирования: ${errorMessage}`);
     }
 
     function stopScanning() {
