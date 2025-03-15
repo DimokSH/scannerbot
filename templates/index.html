@@ -5,126 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Scanner</title>
-
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='html5-qrcode.min.js') }}"></script>
-    <!--    <script src="../static/htmlScaner.js"></script>-->
     <!--    <script src="https://unpkg.com/html5-qrcode"></script>-->
     <!--    <script src="https://unpkg.com/html5-qrcode"></script>-->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            text-align: center;
-        }
 
-        #reader {
-            width: 100%;
-            margin: 20px auto;
-            position: relative;
-            display: none;
-        }
-
-        #result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #2196F3;
-        }
-
-        #startBtn {
-            background-color: #2196F3;
-        }
-
-        #stopBtn {
-            background-color: #f44336;
-            display: none;
-        }
-
-        #passwordInput {
-            margin: 10px;
-            padding: 8px;
-            width: 200px;
-        }
-
-        .password-section {
-            margin-top: 50px;
-            position: relative;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        #exitBtn {
-            background-color: #666;
-        }
-
-
-        #mainContent {
-            position: relative;
-            min-height: 100vh;
-        }
-
-        .button-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #startBtn {
-            padding: 25px 50px;
-            font-size: 1.5em;
-            transform: scale(1.5);
-            margin: 15px;
-        }
-
-        #exitBtn {
-            margin-top: 40px;
-            transform: scale(1.2);
-        }
-
-        /* Добавляем новые стили для сообщения об ошибке */
-        .error-message {
-            color: #dc3545;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            padding: 8px 15px;
-            margin-top: 10px;
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-        }
-
-        .error-message.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-
-    </style>
 </head>
 <body>
 <!--<audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>-->
@@ -132,9 +17,12 @@
 <audio id="successSound" src="{{ url_for('static', filename='s.mp3') }}"></audio>
 
 <div class="password-section">
+    <div id="passwordError" class="error-message"></div>
     <button id="passwordBtn">Ввести пароль</button>
-    <input type="number" id="passwordInput" class="hidden" placeholder="Введите пароль">
-    <div id="passwordError" class="error-message"></div> <!-- Добавлен блок для ошибки -->
+<!--    <input type="number" id="passwordInput" class="hidden" placeholder="Введите пароль">-->
+    <input type="text" inputmode="numeric" pattern="[0-9]*" id="passwordInput" class="hidden"
+           placeholder="Введите пароль" maxlength="4">
+
 </div>
 
 <div id="mainContent" class="hidden">
@@ -149,7 +37,8 @@
 </div>
 
 <script>
-    const serverIp = "https://scannerbot.ru";
+    const serverIp = '{{servAdr}}';
+    // const serverIp = "https://scannerbot.ru";
     //const serverIp = "http://127.0.0.1:5000";
 
     let scanner = null;
@@ -166,22 +55,45 @@
         document.getElementById('passwordInput').focus();
     });
 
+
     // Модифицированная часть обработчика пароля
-    document.getElementById('passwordInput').addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') {
-            const passwordInput = document.getElementById('passwordInput');
-            const password = passwordInput.value;
-            const errorElement = document.getElementById('passwordError');
+    // document.getElementById('passwordInput').addEventListener('keyup', (e) => {
+    //     if (e.key === 'Enter') {
+    //         const passwordInput = document.getElementById('passwordInput');
+    //         const password = passwordInput.value;
+    //         const errorElement = document.getElementById('passwordError');
+    //
+    //         fetch('' + serverIp + `/checkKey/?key=${encodeURIComponent(password)}`)
+    //             .then(response => {
+    //                 if (response.status === 200) {
+    //                     savedKey = password;
+    //                     document.querySelector('.password-section').classList.add('hidden');
+    //                     document.getElementById('mainContent').classList.remove('hidden');
+    //                     passwordInput.value = '';
+    //                     errorElement.classList.remove('show');
+    //                 } else {
+    //                     throw new Error('Неверный пароль!');
+    //                 }
+    //             })
+    //             .catch(error => {
+    //                 errorElement.textContent = error.message || 'Ошибка соединения';
+    //                 errorElement.classList.add('show');
+    //                 passwordInput.value = '';
+    //                 document.getElementById('passwordBtn').classList.remove('hidden');
+    //                 passwordInput.classList.add('hidden');
+    //             });
+    //     }
+    // });
 
-            // //отладка
-            // savedKey = password;
-            // document.querySelector('.password-section').classList.add('hidden');
-            // document.getElementById('mainContent').classList.remove('hidden');
-            // passwordInput.value = '';
-            // errorElement.classList.remove('show');
-            // return
+    // // Добавляем обработчик для скрытия ошибки при новом вводе
+    document.getElementById('passwordInput').addEventListener('input', (e) => {
+        const passwordInput = e.target;
+        const password = passwordInput.value;
+        const errorElement = document.getElementById('passwordError');
 
+        errorElement.classList.remove('show');
 
+        if (password.length === 4) {
             fetch('' + serverIp + `/checkKey/?key=${encodeURIComponent(password)}`)
                 .then(response => {
                     if (response.status === 200) {
@@ -190,6 +102,7 @@
                         document.getElementById('mainContent').classList.remove('hidden');
                         passwordInput.value = '';
                         errorElement.classList.remove('show');
+                        startScanning();
                     } else {
                         throw new Error('Неверный пароль!');
                     }
@@ -202,11 +115,6 @@
                     passwordInput.classList.add('hidden');
                 });
         }
-    });
-
-    // Добавляем обработчик для скрытия ошибки при новом вводе
-    document.getElementById('passwordInput').addEventListener('input', () => {
-        document.getElementById('passwordError').classList.remove('show');
     });
 
 

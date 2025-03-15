@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, render_template
 app = Flask(__name__)
 
 # Инициализация множества ключей
-my_keys = {'7', '105'}
+my_keys = {'7777', '105'}
 
 # Инициализация хранилища для QR-кодов
 storage = {}
@@ -75,10 +75,16 @@ def list_storage():
 
 @app.route('/', methods=['GET'])
 def scan():
-    return render_template('index.html')
+    if __file__ == 'D:\\__Python_projects\\pythonScanner\\app.py':
+        servAdr = 'http://127.0.0.1:5000'
+    else:
+        servAdr = 'https://scannerbot.ru'
+    return render_template('index.html', servAdr=servAdr)
+
 
 # @app.route('/', methods=['GET'])
 # def home():
 #     return jsonify('hello'), 200
+
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='127.0.0.1', port=5000, debug=True)
