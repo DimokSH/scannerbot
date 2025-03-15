@@ -220,6 +220,7 @@
     function handleExit() {
         // Останавливаем сканер если активен
         stopScanning();
+
         // Скрываем основной интерфейс
         document.getElementById('mainContent').classList.add('hidden');
         // Показываем экран ввода пароля
@@ -252,18 +253,20 @@
         document.getElementById('result').innerHTML = `
                 <h3>Результат:</h3>
                 <p>Успешно отсканировано. Смотрите результат в программе.</p>
-                // <p>${decodedText}</p>
             `;
+                // <p>${decodedText}</p>
 
 // Отправка данных на сервер
 
         fetch('' + serverIp + `/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`)
             .then(response => {
                 if (!response.ok) {
+                    alert("Ошибка при отправке данных")
                     console.error('Ошибка при отправке данных');
                 }
             })
             .catch(error => {
+                alert("ошибка .catch(error => ")
                 console.error('Ошибка:', error);
                 handleExit();
             });
