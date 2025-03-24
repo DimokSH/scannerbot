@@ -186,8 +186,9 @@ function uploadFoto(event) {
         clearTimeout(timeoutId);
         if (response.ok) {
             alert('Фото успешно отправлено!');
-        } else if (response.status === 405) {
+        } else if (response.status === 400) {
             alert('Подождите пока предыдущее фото будет обработано сервером');
+            alert(response.message)
         } else {
             alert('Ошибка при отправке фото');
             console.log(response);
