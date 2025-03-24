@@ -188,7 +188,6 @@ function uploadFoto(event) {
             alert('Фото успешно отправлено!');
         } else if (response.status === 400) {
             alert('Подождите пока предыдущее фото будет обработано сервером');
-            alert(response.message)
         } else {
             alert('Ошибка при отправке фото');
             console.log(response);
