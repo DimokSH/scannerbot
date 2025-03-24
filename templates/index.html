@@ -58,35 +58,6 @@
     });
 
 
-    // Модифицированная часть обработчика пароля
-    // document.getElementById('passwordInput').addEventListener('keyup', (e) => {
-    //     if (e.key === 'Enter') {
-    //         const passwordInput = document.getElementById('passwordInput');
-    //         const password = passwordInput.value;
-    //         const errorElement = document.getElementById('passwordError');
-    //
-    //         fetch('' + serverIp + `/checkKey/?key=${encodeURIComponent(password)}`)
-    //             .then(response => {
-    //                 if (response.status === 200) {
-    //                     savedKey = password;
-    //                     document.querySelector('.password-section').classList.add('hidden');
-    //                     document.getElementById('mainContent').classList.remove('hidden');
-    //                     passwordInput.value = '';
-    //                     errorElement.classList.remove('show');
-    //                 } else {
-    //                     throw new Error('Неверный пароль!');
-    //                 }
-    //             })
-    //             .catch(error => {
-    //                 errorElement.textContent = error.message || 'Ошибка соединения';
-    //                 errorElement.classList.add('show');
-    //                 passwordInput.value = '';
-    //                 document.getElementById('passwordBtn').classList.remove('hidden');
-    //                 passwordInput.classList.add('hidden');
-    //             });
-    //     }
-    // });
-
     // // Добавляем обработчик для скрытия ошибки при новом вводе
     document.getElementById('passwordInput').addEventListener('input', (e) => {
         const passwordInput = e.target;
@@ -123,6 +94,7 @@
     // Оригинальные функции сканера
     function toggleButtons(startVisible, stopVisible) {
         document.getElementById('startBtn').style.display = startVisible ? 'inline-block' : 'none';
+        document.getElementById('uploadFotoBtn').style.display = startVisible ? 'inline-block' : 'none';
         document.getElementById('exitBtn').style.display = startVisible ? 'inline-block' : 'none';
         document.getElementById('stopBtn').style.display = stopVisible ? 'inline-block' : 'none';
     }
@@ -130,15 +102,6 @@
     function handleExit() {
         // Останавливаем сканер если активен
         stopScanning();
-
-        // // Скрываем основной интерфейс
-        // document.getElementById('mainContent').classList.add('hidden');
-        // // Показываем экран ввода пароля
-        // document.querySelector('.password-section').classList.remove('hidden');
-        // // Сбрасываем состояние пароля
-        // document.getElementById('passwordInput').value = '';
-        // document.getElementById('passwordBtn').classList.remove('hidden');
-        // document.getElementById('passwordInput').classList.add('hidden');
 
         // Полный рефреш страницы
         location.reload(true);
