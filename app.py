@@ -168,9 +168,8 @@ def upload_photo():
     # только одно фото может быть для одного ключа!
     #
     listFiles = find_files_by_prefix(key)
-    if len(listFiles) > 0:
-        print(333)
-        return jsonify({"message": f"Вы уже прикрепляли файл. Сначала он должен быть обработан вашей программой"}), 400
+    for fileName in listFiles:
+        deleteFile(fileName)
 
     # Проверка наличия файла
     if 'photo' not in request.files:
