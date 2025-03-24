@@ -18,7 +18,7 @@
     <div id="passwordError" class="error-message"></div>
     <button id="passwordBtn">Ввести пароль</button>
     <input type="text" inputmode="numeric" pattern="[0-9]*" id="passwordInput" class="hidden"
-           placeholder="Введите пароль" maxlength="4">
+           placeholder="Введите пароль" maxlength="3">
 
 </div>
 
@@ -27,6 +27,11 @@
     <div id="reader"></div>
     <div class="button-container">
         <button id="startBtn" onclick="startScanning()">Начать сканирование</button>
+        <br>
+        <br>
+        <br>
+        <button id="uploadFotoBtn" onclick="document.getElementById('fileInput').click()">Прикрепить фото/картинку</button>
+        <input type="file" id="fileInput" accept="image/*" hidden onchange="uploadFoto(event)">
         <button id="exitBtn" onclick="handleExit()">Выход</button>
     </div>
     <button id="stopBtn" onclick="stopScanning()">Остановить сканирование</button>
@@ -90,7 +95,7 @@
 
         errorElement.classList.remove('show');
 
-        if (password.length === 4) {
+        if (password.length === 3) {
             fetch('' + serverIp + `/checkKey/?key=${encodeURIComponent(password)}`)
                 .then(response => {
                     if (response.status === 200) {
@@ -156,6 +161,50 @@
             });
         }
     }
+
+function uploadFoto(event) {
+    const fileInput = event.target;
+    const file = fileInput.files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    // Добавляем таймаут для запроса
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, 10000); // Таймаут 10 секунд
+
+    fetch('' + serverIp + `/upload_photo/?key=${encodeURIComponent(savedKey)}`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal // Подключаем AbortController
+    })
+    .then(response => {
+        clearTimeout(timeoutId);
+        if (response.ok) {
+            alert('Фото успешно отправлено!');
+        } else if (response.status === 405) {
+            alert('Подождите пока предыдущее фото будет обработано сервером');
+        } else {
+            alert('Ошибка при отправке фото');
+            console.log(response);
+        }
+    })
+    .catch(error => {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            alert('Ошибка сети: Превышено время ожидания ответа сервера');
+        } else {
+            alert('Ошибка сети: ' + error.message);
+        }
+    })
+    .finally(() => {
+        fileInput.value = '';
+    });
+}
 
 
 
