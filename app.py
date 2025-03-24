@@ -3,8 +3,11 @@ import os, random
 from datetime import datetime, timedelta
 
 from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask
+
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB (adjust as needed)
 
 UPLOAD_FOLDER = 'uploads'
 # Инициализация множества ключей
