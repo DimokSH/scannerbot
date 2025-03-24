@@ -166,6 +166,7 @@ def upload_photo():
     print(22222)
 
     # только одно фото может быть для одного ключа!
+    #
     listFiles = find_files_by_prefix(key)
     if len(listFiles) > 0:
         print(333)
