@@ -8,6 +8,7 @@ from flask import Flask
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB (adjust as needed)
+app.config['JSONIFY_MIMETYPE'] = 'application/json; charset=utf-8'
 
 UPLOAD_FOLDER = 'uploads'
 # Инициализация множества ключей
@@ -95,8 +96,8 @@ def new_qr():
     if key not in myKeys:
         return jsonify({"message": f"error newqr not found {key}"}), 404
     if key not in storage:
-        storage[key] = {'qrArray': [], 'filesArray': []}
-    storage[key]['qrArray'].append(qr)
+        storage[key] = []
+    storage[key].append(qr)
     return str(storage[key]), 200
 
 
@@ -120,12 +121,13 @@ def get_storage():
         return jsonify({"message": "Key parameter is missing"}), 400
     if key not in myKeys:
         return jsonify({"message": f"error getStorage key {key} not found"}), 404
-    data = storage.get(key, {'qrArray': [], 'filesArray': []})
-    data['filesArray'] = find_files_by_prefix(key)
-
+    data = storage.get(key, [])
+    if len(data) == 0:
+        return jsonify(data), 300
     # удаляем штрихкод из массива штрихкодов
     if key in storage:
         del storage[key]
+    print(data)
     return jsonify(data), 200
 
 
@@ -261,5 +263,6 @@ else:
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
+
 
 
