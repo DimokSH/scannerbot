@@ -26,11 +26,11 @@
 <!--    <h1>QR Code Scanner</h1>-->
     <div id="reader"></div>
     <div class="button-container">
-        <button id="startBtn" onclick="startScanning()">Начать сканирование</button>
+        <button id="startBtn" onclick="startScanning()">Сканировать QR-код</button>
         <br>
         <br>
         <br>
-        <button id="uploadFotoBtn" onclick="document.getElementById('fileInput').click()">Прикрепить фото/картинку</button>
+        <button id="uploadFotoBtn" onclick="uploadFotoBtn_click()">Прикрепить фото/картинку</button>
         <input type="file" id="fileInput" accept="image/*" hidden onchange="uploadFoto(event)">
         <button id="exitBtn" onclick="handleExit()">Выход</button>
     </div>
@@ -75,7 +75,6 @@
                         document.getElementById('mainContent').classList.remove('hidden');
                         passwordInput.value = '';
                         errorElement.classList.remove('show');
-                        // startScanning();
                     } else {
                         throw new Error('Неверный пароль!');
                     }
@@ -90,6 +89,17 @@
         }
     });
 
+    function isKeyValid(localKey) {
+        try {
+            const request = new XMLHttpRequest();
+            request.open('GET', `${serverIp}/checkKey/?key=${encodeURIComponent(localKey)}`, false); // Синхронный запрос
+            request.send(null);
+            return request.status === 200;
+        } catch (error) {
+            console.error('Ошибка проверки ключа:', error);
+            return false;
+        }
+    }
 
     // Оригинальные функции сканера
     function toggleButtons(startVisible, stopVisible) {
@@ -107,7 +117,28 @@
         location.reload(true);
     }
 
+    function uploadFotoBtn_click(){
+        if (isKeyValid(savedKey) == false) {
+            goToMainMenu()
+            return
+        }
+        document.getElementById('fileInput').click()
+    }
+
+
+    function goToMainMenu() {
+        alert("Введенный пароль больше не действителен. Получите новый пароль в программе.")
+        console.error('Введенный пароль больше не действителен. Получите новый пароль в программе');
+        handleExit();
+    }
+
+
     function startScanning() {
+        if (isKeyValid(savedKey) == false) {
+            goToMainMenu()
+            return
+        }
+
         if (!scanner) {
             scanner = new Html5Qrcode("reader");
             toggleButtons(false, true);
@@ -188,9 +219,10 @@ function uploadFoto(event) {
         fetch('' + serverIp + `/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`)
             .then(response => {
                 if (!response.ok) {
-                    alert("Введенный пароль больше не действителен. Получите новый пароль в программе.")
-                    console.error('Введенный пароль больше не действителен. Получите новый пароль в программе');
-                    handleExit();
+                    // goToMainMenu()
+                    // alert("Введенный пароль больше не действителен. Получите новый пароль в программе.")
+                    // console.error('Введенный пароль больше не действителен. Получите новый пароль в программе');
+                    // handleExit();
                 }
             })
             .catch(error => {
