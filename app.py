@@ -1,10 +1,10 @@
 import os, random
+import threading
 
 from datetime import datetime, timedelta
 
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory, after_this_request
 from flask import Flask
-
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB (adjust as needed)
@@ -17,6 +17,13 @@ myKeysParams = {'777': {'dateCreated': datetime.today()}}
 
 # Инициализация хранилища для QR-кодов
 storage = {}
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def deleteFile(filename):
@@ -150,13 +157,6 @@ def listFiles():
     return jsonify(l), 200
 
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 @app.route('/upload_photo/', methods=['POST'])
 def upload_photo():
     key = request.args.get('key')
@@ -178,11 +178,9 @@ def upload_photo():
         return jsonify({'error': 'No file uploaded'}), 400
     file = request.files['photo']
 
-
     # Проверка расширения файла
     if not allowed_file(file.filename):
         return jsonify({'error': 'File type not allowed'}), 400
-
 
     # Генерация безопасного имени файла
     timestamp = datetime.now().strftime("%Y%m%d_%H-%M-%S")
@@ -199,10 +197,10 @@ def upload_photo():
 def index():
     return render_template('index.html', servAdr=servAdr)
 
-
-@app.route('/foto', methods=['GET'])
-def foto():
-    return render_template('foto.html', servAdr=servAdr)
+#
+# @app.route('/foto', methods=['GET'])
+# def foto():
+#     return render_template('foto.html', servAdr=servAdr)
 
 
 @app.route('/getfoto/', methods=['GET'])
@@ -216,7 +214,7 @@ def get_foto():
     # только одно фото может быть для одного ключа!
     listFiles = find_files_by_prefix(key)
     if len(listFiles) == 0:
-        return jsonify({"message": f"Нет файлов для передачи"}), 404
+        return jsonify({"message": f"Нет файлов для передачи"}), 300
 
     filename = listFiles[0]
     file_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -224,7 +222,36 @@ def get_foto():
     if not os.path.isfile(file_path):
         return jsonify({"message": "File not found"}), 404
 
+
+    # Удаление файла через 5 секунд в отдельном потоке
+    def delayed_delete(filename):
+        try:
+            deleteFile(filename)
+            app.logger.info(f"Файл {filename} успешно удален.")
+        except Exception as e:
+            app.logger.error(f"Ошибка при удалении файла {filename}: {e}")
+
+    @after_this_request
+    def schedule_delete(response):
+        threading.Timer(0.5, delayed_delete, args=[filename]).start()
+        return response
+
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+@app.route('/delfoto/', methods=['GET'])
+def del_foto():
+    key = request.args.get('key')
+    if not key:
+        return jsonify({"message": "Key parameter is missing"}), 400
+    if key not in myKeys:
+        return jsonify({"message": f"error  key {key} not found in storage"}), 404
+
+    # только одно фото может быть для одного ключа!
+    listFoto = find_files_by_prefix(key)
+    for fileName in listFoto:
+        deleteFile(fileName)
+    return jsonify({"message": "ok"}), 200
 
 
 # @app.route('/', methods=['GET'])
@@ -253,9 +280,6 @@ def generateNewKey():
 
 
 
-# generateNewKey()
-
-
 if __file__ == 'D:\\__Python_projects\\pythonScanner\\app.py':
     servAdr = 'http://127.0.0.1:5000'
 else:
@@ -263,6 +287,3 @@ else:
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
-
-
-
