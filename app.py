@@ -118,7 +118,7 @@ def new_qr():
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html', servAdr=servAdr, savedKey='')
+    return render_template('index.html', servAdr=servAdr, savedKey='', isQrVisible = True)
 
 
 @app.route('/start/', methods=['GET'])
@@ -129,7 +129,7 @@ def startWithKey():
     if not key in myKeys:
         return jsonify({"message": f"error checkKey key {key} not found"}), 404
 
-    return render_template('index.html', servAdr=servAdr, savedKey=key)
+    return render_template('index.html', servAdr=servAdr, savedKey=key, isQrVisible = False)
 
 
 

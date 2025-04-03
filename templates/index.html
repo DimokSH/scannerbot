@@ -41,6 +41,8 @@
 <script>
     const serverIp = '{{servAdr}}';
     let savedKey = '{{savedKey}}'; // Переменная для хранения пароля
+    let isQrVisible = ('{{isQrVisible}}'?.toLowerCase?.() === 'true');
+
     // const serverIp = "https://scannerbot.ru";
     //const serverIp = "http://127.0.0.1:5000";
 
@@ -90,6 +92,7 @@
 
 
     function afterSuccesPassword() {
+        toggleButtons(true, false);
         document.querySelector('.password-section').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
         document.getElementById('passwordInput').value = '';
@@ -116,7 +119,7 @@
 
     // Оригинальные функции сканера
     function toggleButtons(startVisible, stopVisible) {
-        document.getElementById('startBtn').style.display = startVisible ? 'inline-block' : 'none';
+        document.getElementById('startBtn').style.display = isQrVisible && startVisible ? 'inline-block' : 'none';
         document.getElementById('uploadFotoBtn').style.display = startVisible ? 'inline-block' : 'none';
         document.getElementById('exitBtn').style.display = startVisible ? 'inline-block' : 'none';
         document.getElementById('stopBtn').style.display = stopVisible ? 'inline-block' : 'none';
