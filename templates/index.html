@@ -40,11 +40,11 @@
 
 <script>
     const serverIp = '{{servAdr}}';
+    let savedKey = '{{savedKey}}'; // Переменная для хранения пароля
     // const serverIp = "https://scannerbot.ru";
     //const serverIp = "http://127.0.0.1:5000";
 
     let scanner = null;
-    let savedKey = ''; // Переменная для хранения пароля
     const config = {
         fps: 15,
         qrbox: 250
@@ -62,19 +62,18 @@
     document.getElementById('passwordInput').addEventListener('input', (e) => {
         const passwordInput = e.target;
         const password = passwordInput.value;
+        console.log(password)
         const errorElement = document.getElementById('passwordError');
 
         errorElement.classList.remove('show');
 
         if (password.length === 3) {
-            fetch('' + serverIp + `/checkKey/?key=${encodeURIComponent(password)}`)
+            // fetch('' + serverIp + `/checkKey/?key=${encodeURIComponent(password)}`)
+            fetch(`/checkKey/?key=${encodeURIComponent(password)}`)
                 .then(response => {
                     if (response.status === 200) {
-                        savedKey = password;
-                        document.querySelector('.password-section').classList.add('hidden');
-                        document.getElementById('mainContent').classList.remove('hidden');
-                        passwordInput.value = '';
-                        errorElement.classList.remove('show');
+                        savedKey =  password;
+                        afterSuccesPassword();
                     } else {
                         throw new Error('Неверный пароль!');
                     }
@@ -88,6 +87,20 @@
                 });
         }
     });
+
+
+    function afterSuccesPassword() {
+        document.querySelector('.password-section').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+        document.getElementById('passwordInput').value = '';
+        errorElement.classList.remove('show');
+
+    }
+
+    if (savedKey != ''){
+        afterSuccesPassword()
+    }
+
 
     function isKeyValid(localKey) {
         try {
@@ -114,7 +127,9 @@
         stopScanning();
 
         // Полный рефреш страницы
-        location.reload(true);
+        //  location.reload(true);
+        // Переход на базовый URL index.html
+        window.location.href = '/';
     }
 
     function uploadFotoBtn_click(){

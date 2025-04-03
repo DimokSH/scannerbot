@@ -3,10 +3,11 @@ import threading
 
 from datetime import datetime, timedelta
 
-from flask import Flask, request, jsonify, render_template, send_from_directory, after_this_request
-from flask import Flask
+from flask import Flask, request, jsonify, render_template, send_from_directory, after_this_request, redirect, url_for
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Разрешить все origins
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB (adjust as needed)
 app.config['JSONIFY_MIMETYPE'] = 'application/json; charset=utf-8'
 
@@ -86,11 +87,18 @@ def find_files_by_prefix(search_prefix):
 
 @app.route('/checkKey/', methods=['GET'])
 def check_key():
+    print('check_key')
     key = request.args.get('key')
+    print(myKeys)
+    print(key)
+    print('check_key2')
     if not key:
+        print('check_key3')
         return jsonify({"message": "Key parameter is missing"}), 400
     if key in myKeys:
+        print('check_key4')
         return '', 200
+    print('check_key5')
     return jsonify({"message": f"error checkKey key {key} not found"}), 404
 
 
@@ -106,6 +114,23 @@ def new_qr():
         storage[key] = []
     storage[key].append(qr)
     return str(storage[key]), 200
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html', servAdr=servAdr, savedKey='')
+
+
+@app.route('/start/', methods=['GET'])
+def startWithKey():
+    key = request.args.get('key')
+    if not key:
+        return jsonify({"message": "Key parameter is missing"}), 400
+    if not key in myKeys:
+        return jsonify({"message": f"error checkKey key {key} not found"}), 404
+
+    return render_template('index.html', servAdr=servAdr, savedKey=key)
+
 
 
 @app.route('/deleteKey/', methods=['GET'])
@@ -193,14 +218,6 @@ def upload_photo():
     return jsonify({'message': 'File uploaded successfully', 'filename': 'ok'}), 200
 
 
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html', servAdr=servAdr)
-
-#
-# @app.route('/foto', methods=['GET'])
-# def foto():
-#     return render_template('foto.html', servAdr=servAdr)
 
 
 @app.route('/getfoto/', methods=['GET'])
