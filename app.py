@@ -295,6 +295,16 @@ def generateNewKey():
 
     return jsonify({'message': 'new key generated successfully', 'key': newKey}), 200
 
+@app.route('/ii/', methods=['GET'])
+def iiTest():
+    tovarName = request.args.get('tovarName')
+    if not tovarName:
+        return jsonify({"message": "tovarName parameter is missing"}), 400
+
+    import ii
+    answer = ii.askIi(tovarName)
+
+    return jsonify({'message': answer}), 200
 
 
 if __file__ == 'D:\\__Python_projects\\pythonScanner\\app.py':
