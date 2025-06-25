@@ -28,7 +28,7 @@ def askIi(tovarName):
         logger.error("API ключ или прокси не найдены в окружении")
         return 'какая-то ошибка'
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
     headers = {'Content-Type': 'application/json'}
     proxies = {"http": myProxyAdressDD, "https": myProxyAdressDD}
 
