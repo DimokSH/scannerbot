@@ -1,10 +1,15 @@
 import requests
 import json
 import os
+from dotenv import load_dotenv
+
 
 def askIi(tovarName):
-    gemini_api_key = os.getenv("GEMINI_API_KEY")
-    myProxyAdressDD = os.getenv("myProxyAdressDD")
+    # gemini_api_key = os.getenv("GEMINI_API_KEY")
+    # myProxyAdressDD = os.getenv("myProxyAdressDD")
+    load_dotenv()  # Загрузка .env из текущей директории
+    gemini_api_key = os.getenv("newGEMINI_API_KEY")
+    myProxyAdressDD = os.getenv("newmyProxyAdressDD")
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_api_key}"
 
@@ -14,7 +19,11 @@ def askIi(tovarName):
 
 
     print(tovarName)
-    tt = f'дай подробные описание характеристик товара видеокарта {tovarName}. Ответ представь в виде json, без древовидной структуры, всё на одном уровне. Название свойств пиши на русском языке. Используй поиск в интернете. Напиши источник откуда взялись данные'
+    tt = f'дай подробные описание характеристик товара {tovarName}. ' \
+         f'Ответ представь в виде json, без древовидной структуры, всё на одном уровне. ' \
+         f'Название свойств пиши на русском языке. ' \
+         f'Используй поиск в интернете. ' \
+         f'Напиши источник откуда взялись данные'
 
     data = {
         "contents": [
