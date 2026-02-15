@@ -1,0 +1,140 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center;
+}
+
+#reader {
+    width: 100%;
+    margin: 20px auto;
+    position: relative;
+    display: none;
+}
+
+#result {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #2196F3;
+}
+
+#stopBtn {
+    background-color: #f44336;
+    display: none;
+}
+
+#passwordInput {
+    margin: 10px;
+    padding: 8px;
+    width: 200px;
+}
+
+.password-section {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.hidden {
+    display: none;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+#exitBtn {
+    background-color: #666;
+}
+
+#mainContent {
+    position: relative;
+    min-height: 100vh;
+}
+
+
+.button-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#startBtn {
+    background-color: #2196F3;
+    padding: 25px 50px;
+    font-size: 1.5em;
+    transform: scale(1.5);
+    margin: 15px;
+}
+#uploadFotoBtn {
+    background-color: #2196F3;
+    padding: 25px 50px;
+    font-size: 1.5em;
+    transform: scale(1.5);
+    margin: 15px;
+}
+
+
+#passwordBtn {
+    padding: 25px 50px;
+    font-size: 1.5em;
+    margin: 0;
+}
+
+#passwordInput {
+    padding: 25px 50px;
+    font-size: 1.5em;
+    transform: scale(1.1);
+    margin: 15px;
+}
+
+#exitBtn {
+    margin-top: 40px;
+    transform: scale(1.2);
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 8px 15px;
+    display: none;
+    order: -1;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.error-message.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
