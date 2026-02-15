@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
+    <title>Сканер QR и штрихкодов</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='html5-qrcode.min.js') }}"></script>
     <!--    <script src="https://unpkg.com/html5-qrcode"></script>-->
@@ -26,7 +26,7 @@
 <!--    <h1>QR Code Scanner</h1>-->
     <div id="reader"></div>
     <div class="button-container">
-        <button id="startBtn" onclick="startScanning()">Сканировать QR-код</button>
+        <button id="startBtn" onclick="startScanning()">Сканировать QR или штрихкод</button>
         <br>
         <br>
         <br>
@@ -47,9 +47,12 @@
     //const serverIp = "http://127.0.0.1:5000";
 
     let scanner = null;
+    // Конфиг сканера: QR + линейные штрихкоды (html5-qrcode на базе ZXing)
+    // formatsToSupport: коды форматов (0=QR_CODE, 3=CODE_39, 5=CODE_128, 9=EAN_13, 10=EAN_8, 14=UPC_A, 15=UPC_E и др.)
     const config = {
         fps: 15,
-        qrbox: 250
+        qrbox: 250, 
+        formatsToSupport: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     };
 
     // Обработчики для системы пароля

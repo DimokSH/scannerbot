@@ -307,7 +307,7 @@ def iiTest():
     return jsonify({'message': answer}), 200
 
 
-if __file__ == 'D:\\__Python_projects\\pythonScanner\\app.py':
+if __file__ == 'C:\\scannerbot\\app.py':
     servAdr = 'http://127.0.0.1:5000'
 else:
     servAdr = 'https://scannerbot.ru'
