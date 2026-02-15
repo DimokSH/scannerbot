@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сканер QR и штрихкодов</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='html5-qrcode.min.js') }}"></script>
+    <!--    <script src="https://unpkg.com/html5-qrcode"></script>-->
+    <!--    <script src="https://unpkg.com/html5-qrcode"></script>-->
+
+</head>
+<body>
+<audio id="successSound" src="{{ url_for('static', filename='s.mp3') }}"></audio>
+
+<div class="password-section">
+    <div id="passwordError" class="error-message"></div>
+    <button id="passwordBtn">Ввести пароль</button>
+    <input type="text" inputmode="numeric" pattern="[0-9]*" id="passwordInput" class="hidden"
+           placeholder="Введите пароль" maxlength="3">
+
+</div>
+
+<div id="mainContent" class="hidden">
+<!--    <h1>QR Code Scanner</h1>-->
+    <div id="reader"></div>
+    <div class="button-container">
+        <button id="startBtn" onclick="startScanning()">Сканировать QR или штрихкод</button>
+        <br>
+        <br>
+        <br>
+        <button id="uploadFotoBtn" onclick="uploadFotoBtn_click()">Прикрепить фото/картинку</button>
+        <input type="file" id="fileInput" accept="image/*" hidden onchange="uploadFoto(event)">
+        <button id="exitBtn" onclick="handleExit()">Выход</button>
+    </div>
+    <button id="stopBtn" onclick="stopScanning()">Остановить сканирование</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    const serverIp = '{{servAdr}}';
+    let savedKey = '{{savedKey}}'; // Переменная для хранения пароля
+    let isQrVisible = ('{{isQrVisible}}'?.toLowerCase?.() === 'true');
+
+    // const serverIp = "https://scannerbot.ru";
+    //const serverIp = "http://127.0.0.1:5000";
+
+    let scanner = null;
+    // Конфиг сканера: QR + линейные штрихкоды (html5-qrcode на базе ZXing)
+    // formatsToSupport: коды форматов (0=QR_CODE, 3=CODE_39, 5=CODE_128, 9=EAN_13, 10=EAN_8, 14=UPC_A, 15=UPC_E и др.)
+    const config = {
+        fps: 15,
+        qrbox: 250, 
+        formatsToSupport: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    };
+
+    // Обработчики для системы пароля
+    document.getElementById('passwordBtn').addEventListener('click', () => {
+        document.getElementById('passwordBtn').classList.add('hidden');
+        document.getElementById('passwordInput').classList.remove('hidden');
+        document.getElementById('passwordInput').focus();
+    });
+
+
+    // // Добавляем обработчик для скрытия ошибки при новом вводе
+    document.getElementById('passwordInput').addEventListener('input', (e) => {
+        const passwordInput = e.target;
+        const password = passwordInput.value;
+        console.log(password)
+        const errorElement = document.getElementById('passwordError');
+
+        errorElement.classList.remove('show');
+
+        if (password.length === 3) {
+            // fetch('' + serverIp + `/checkKey/?key=${encodeURIComponent(password)}`)
+            fetch(`/checkKey/?key=${encodeURIComponent(password)}`)
+                .then(response => {
+                    if (response.status === 200) {
+                        savedKey =  password;
+                        afterSuccesPassword();
+                    } else {
+                        throw new Error('Неверный пароль!');
+                    }
+                })
+                .catch(error => {
+                    errorElement.textContent = error.message || 'Ошибка соединения';
+                    errorElement.classList.add('show');
+                    passwordInput.value = '';
+                    document.getElementById('passwordBtn').classList.remove('hidden');
+                    passwordInput.classList.add('hidden');
+                });
+        }
+    });
+
+
+    function afterSuccesPassword() {
+        toggleButtons(true, false);
+        document.querySelector('.password-section').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+        document.getElementById('passwordInput').value = '';
+        errorElement.classList.remove('show');
+
+    }
+
+    if (savedKey != ''){
+        afterSuccesPassword()
+    }
+
+
+    function isKeyValid(localKey) {
+        try {
+            const request = new XMLHttpRequest();
+            request.open('GET', `${serverIp}/checkKey/?key=${encodeURIComponent(localKey)}`, false); // Синхронный запрос
+            request.send(null);
+            return request.status === 200;
+        } catch (error) {
+            console.error('Ошибка проверки ключа:', error);
+            return false;
+        }
+    }
+
+    // Оригинальные функции сканера
+    function toggleButtons(startVisible, stopVisible) {
+        document.getElementById('startBtn').style.display = isQrVisible && startVisible ? 'inline-block' : 'none';
+        document.getElementById('uploadFotoBtn').style.display = startVisible ? 'inline-block' : 'none';
+        document.getElementById('exitBtn').style.display = startVisible ? 'inline-block' : 'none';
+        document.getElementById('stopBtn').style.display = stopVisible ? 'inline-block' : 'none';
+    }
+
+    function handleExit() {
+        // Останавливаем сканер если активен
+        stopScanning();
+
+        // Полный рефреш страницы
+        //  location.reload(true);
+        // Переход на базовый URL index.html
+        window.location.href = '/';
+    }
+
+    function uploadFotoBtn_click(){
+        if (isKeyValid(savedKey) == false) {
+            goToMainMenu()
+            return
+        }
+        document.getElementById('fileInput').click()
+    }
+
+
+    function goToMainMenu() {
+        alert("Введенный пароль больше не действителен. Получите новый пароль в программе.")
+        console.error('Введенный пароль больше не действителен. Получите новый пароль в программе');
+        handleExit();
+    }
+
+
+    function startScanning() {
+        if (isKeyValid(savedKey) == false) {
+            goToMainMenu()
+            return
+        }
+
+        if (!scanner) {
+            scanner = new Html5Qrcode("reader");
+            toggleButtons(false, true);
+            document.getElementById('reader').style.display = 'block';
+
+            scanner.start(
+                {facingMode: "environment"},
+                config,
+                onScanSuccess,
+                onScanError
+            ).catch(err => {
+                console.error("Не удалось запустить сканер", err);
+                stopScanning();
+            });
+        }
+    }
+
+function uploadFoto(event) {
+    const fileInput = event.target;
+    const file = fileInput.files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    // Добавляем таймаут для запроса
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, 10000); // Таймаут 10 секунд
+
+    fetch('' + serverIp + `/upload_photo/?key=${encodeURIComponent(savedKey)}`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal // Подключаем AbortController
+    })
+    .then(response => {
+        clearTimeout(timeoutId);
+        if (response.ok) {
+            alert('Фото успешно отправлено!');
+        } else if (response.status === 400) {
+            alert('Подождите пока предыдущее фото будет обработано сервером');
+        } else {
+            alert('Ошибка при отправке фото');
+            console.log(response);
+        }
+    })
+    .catch(error => {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            alert('Ошибка сети: Превышено время ожидания ответа сервера');
+        } else {
+            alert('Ошибка сети: ' + error.message);
+        }
+    })
+    .finally(() => {
+        fileInput.value = '';
+    });
+}
+
+
+
+    function setResultText_empty() {
+        // console.warn('setResultText_empty' + document.getElementById('result').innerHTML);
+        // document.getElementById('result').innerHTML = '';
+    }
+    function setResultText_ok() {
+        document.getElementById('result').innerHTML = `
+                <h3>Результат:</h3>
+                <p>Успешно отсканировано. Смотрите результат в программе.</p>
+            `;
+    }
+
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Отправка данных на сервер
+        fetch('' + serverIp + `/newqr/?key=${encodeURIComponent(savedKey)}&qr=${encodeURIComponent(decodedText)}`)
+            .then(response => {
+                if (!response.ok) {
+                    // goToMainMenu()
+                    // alert("Введенный пароль больше не действителен. Получите новый пароль в программе.")
+                    // console.error('Введенный пароль больше не действителен. Получите новый пароль в программе');
+                    // handleExit();
+                }
+            })
+            .catch(error => {
+                alert("ошибка .catch(error => ")
+                console.error('Ошибка:', error);
+                handleExit();
+            });
+        stopScanning();
+        setResultText_ok();
+        const audio = document.getElementById('successSound');
+        audio.play();
+    }
+
+    function onScanError(errorMessage) {
+        // console.warn(`Ошибка сканирования: ${errorMessage}`);
+    }
+
+    function stopScanning() {
+        if (scanner) {
+            scanner.stop().then(() => {
+                scanner = null;
+                document.getElementById('reader').style.display = 'none';
+                toggleButtons(true, false);
+                console.log("Сканирование остановлено");
+                setResultText_empty();
+
+            }).catch(err => {
+                console.log("Ошибка при остановке сканера", err);
+            });
+        }
+    }
+
+
+
+</script>
+</body>
+</html>
