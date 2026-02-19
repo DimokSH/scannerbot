@@ -22,6 +22,7 @@ env/
 # Project
 .cursor/
 memory-bank/
+instructions/
 
 # OS
 .DS_Store
