@@ -19,6 +19,10 @@ env/
 *.swo
 *~
 
+# Project
+.cursor/
+memory-bank/
+
 # OS
 .DS_Store
 Thumbs.db
