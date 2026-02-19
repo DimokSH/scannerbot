@@ -23,6 +23,7 @@ env/
 .cursor/
 memory-bank/
 instructions/
+snippets/
 
 # OS
 .DS_Store

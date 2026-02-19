@@ -6,8 +6,11 @@ from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template, send_from_directory, after_this_request, redirect, url_for
 from flask_cors import CORS
 
+from test_app.routes import test_bp
+
 app = Flask(__name__)
 CORS(app)  # Разрешить все origins
+app.register_blueprint(test_bp)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB (adjust as needed)
 app.config['JSONIFY_MIMETYPE'] = 'application/json; charset=utf-8'
 
